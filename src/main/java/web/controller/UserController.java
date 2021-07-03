@@ -3,15 +3,14 @@ package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import web.model.Role;
 import web.model.User;
 import web.service.UserService;
 
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,12 +40,9 @@ public class UserController {
 
     @GetMapping("/user")
     @PreAuthorize("hasAuthority('USER')")
-    public ModelAndView showUser() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("user");
-        modelAndView.addObject("user", user);
-        return modelAndView;
+    public String showUser(Principal principal, Model model) {
+        model.addAttribute("user", userService.getByName(principal.getName()));
+        return "user";
     }
 
     @GetMapping("/addNewUser")
@@ -92,7 +88,7 @@ public class UserController {
     @PostMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String updateUser(@ModelAttribute("user") User user,
-                             @PathVariable("id") long id,
+                             @PathVariable("id") int id,
                              @RequestParam(required = false, name = "ADMIN") String ADMIN,
                              @RequestParam(required = false, name = "USER") String USER) {
 

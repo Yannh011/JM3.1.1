@@ -122,4 +122,9 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "id = " + id + ", name = " + name + ", lastname = " + lastname + ", email = " + email;
+    }
 }

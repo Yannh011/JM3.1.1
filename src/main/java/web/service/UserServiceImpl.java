@@ -19,9 +19,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Autowired
     private UserDao userDao;
-
-
-//    @Autowired
 //    private PasswordEncoder passwordEncoder;
 
     @Override
@@ -31,7 +28,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void add(User user) {
-        //user.setPassword(passwordEncoder.encode(user.getPassword())); не знаю почему не отрабатывает
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         userDao.save(user);
     }
@@ -43,7 +39,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void update(User user) {
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        String encryptedPassword = new BCryptPasswordEncoder().encode(user.getPassword());
+        if (encryptedPassword.matches(user.getPassword())) {
+            user.setPassword(encryptedPassword);
+        }
         userDao.save(user);
     }
 
@@ -59,7 +58,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userDao.getByName(s);
-        return user;
+        User user = getByName(s);
+        if(user == null) {
+            throw new UsernameNotFoundException(String.format("User '%s' not found", s));
+        }
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.getAuthorities());
     }
 }
